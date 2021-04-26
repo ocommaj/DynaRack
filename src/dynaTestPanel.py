@@ -1,5 +1,6 @@
 import bpy
 from bpy.utils import register_class, unregister_class
+from bpy.types import Object
 
 class MountPointsPanel(bpy.types.Panel):
     bl_idname = "DYNARACK_PT_board_panel"
@@ -12,9 +13,9 @@ class MountPointsPanel(bpy.types.Panel):
         layout = self.layout
         scene = context.scene
 
-        collection_data = bpy.data.objects[0].MountPoints
+        collection_data = scene.MountPoints
 
-        layout.operator("object.add_mount_points", icon="MESH_CUBE")
+        layout.operator("scene.add_mount_points", icon="MESH_CUBE")
         layout.prop(collection_data, "count")
 
         if collection_data.count:
@@ -37,9 +38,9 @@ class TestStandoffPanel(bpy.types.Panel):
         layout = self.layout
         scene = context.scene
 
-        standoff_data = bpy.data.objects[0].Standoff
+        standoff_data = scene.Standoff
 
-        layout.operator("object.add_test_standoff", icon='MESH_CUBE', text="Add Test Standoff")
+        layout.operator("scene.add_test_standoff", icon='MESH_CUBE', text="Add Test Standoff")
 
         column = layout.column()
         column.prop(standoff_data, 'metric_diameter')

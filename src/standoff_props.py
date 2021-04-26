@@ -4,9 +4,8 @@ from bpy.props import (
     CollectionProperty,
     PointerProperty
     )
-from bpy.types import PropertyGroup, Object
+from bpy.types import PropertyGroup, Scene
 from bpy.utils import register_class, unregister_class
-#from .standoff import Standoff, test
 
 def CollectionUpdate(self, context):
     self.update(context)
@@ -60,14 +59,14 @@ def register():
     register_class(PG_StandoffBase)
     register_class(PG_MountPoint)
     register_class(PG_MountPointCollection)
-    Object.Standoff = PointerProperty(type=PG_StandoffBase)
-    Object.MountPoint = PointerProperty(type=PG_MountPoint)
-    Object.MountPoints = PointerProperty(type=PG_MountPointCollection)
+    Scene.Standoff = PointerProperty(type=PG_StandoffBase)
+    Scene.MountPoint = PointerProperty(type=PG_MountPoint)
+    Scene.MountPoints = PointerProperty(type=PG_MountPointCollection)
 
 def unregister():
     unregister_class(PG_StandoffBase)
     unregister_class(PG_MountPoint)
     unregister_class(PG_MountPointCollection)
-    del Object.Standoff
-    del Object.MountPoint
-    del Object.MountPoints
+    del Scene.Standoff
+    del Scene.MountPoint
+    del Scene.MountPoints
