@@ -7,26 +7,28 @@ from bpy.props import (
 from bpy.types import PropertyGroup, Scene
 from bpy.utils import register_class, unregister_class
 
-def get_diameter(self):
-    return self.get_diameter()
-
-def set_diameter(self, value):
-    self.set_diameter(value)
-
-def get_height(self):
-    return self.get_height()
-
-def set_height(self, value):
-    self.set_height(value)
-
-def get_count(self):
-    return self.get_count()
-
-def set_count(self, value):
-    self.set_count(value)
-
-def PropertyUpdate(self, context):
-    self.update(context)
+def prop_methods(call, prop=None):
+    if call == "UPDATE":
+        def update(self, context):
+            self.update(context)
+        return update
+    if call == "GET":
+        def getter(self):
+            try:
+                value = self[prop]
+            except:
+                set_default = prop_methods("SET", prop)
+                set_default(self, self.defaults[prop])
+                if hasattr(self, "on_load"):
+                    self.on_load()
+                value = self[prop]
+            finally:
+                return value
+        return getter
+    if call == "SET":
+        def setter(self, value):
+            self[prop] = value
+        return setter
 
 class PG_StandoffBase(PropertyGroup):
     metric_diameter: FloatProperty(
@@ -36,8 +38,8 @@ class PG_StandoffBase(PropertyGroup):
         max=5,
         step=50,
         precision=1,
-        set=set_diameter,
-        get=get_diameter
+        set=prop_methods("SET", "metric_diameter"),
+        get=prop_methods("GET", "metric_diameter")
         )
     height: FloatProperty(
         name="Standoff Height",
@@ -46,33 +48,11 @@ class PG_StandoffBase(PropertyGroup):
         max=6,
         step=25,
         precision=2,
-        set=set_height,
-        get=get_height,
+        set=prop_methods("SET", "height"),
+        get=prop_methods("GET", "height"),
         )
 
-    def get_diameter(self):
-        try:
-            diameter = self["metric_diameter"]
-        except:
-            self.set_diameter(2.5)
-            diameter = self["metric_diameter"]
-        finally:
-            return diameter
-
-    def set_diameter(self, value):
-        self["metric_diameter"] = value
-
-    def get_height(self):
-        try:
-            height = self["height"]
-        except:
-            self.set_height(3)
-            height = self["height"]
-        finally:
-            return height
-
-    def set_height(self, value):
-        self["height"] = value
+    defaults = { "metric_diameter":  2.5, "height": 3 }
 
 class PG_MountPoint(PropertyGroup):
     standoff: PointerProperty(type=PG_StandoffBase)
@@ -84,26 +64,23 @@ class PG_MountPointCollection(PropertyGroup):
         name="Number of Mounts",
         min=2,
         max=6,
-        set=set_count,
-        get=get_count,
-        update=PropertyUpdate
-    )
+        set=prop_methods("SET", "count"),
+        get=prop_methods("GET", "count"),
+        update=prop_methods("UPDATE")
+        )
+
     items: CollectionProperty(type=PG_MountPoint, name="Positions")
 
-    def get_count(self):
-        try:
-            count = self["count"]
-        except:
-            default = 2
-            self.set_count(default)
-            for i in range(default):
-                self.add_mount_point(i)
-            count = self["count"]
-        finally:
-            return count
+    defaults = { "count": 2 }
 
-    def set_count(self, value):
-        self["count"] = value
+    def on_load(self):
+        count = self.defaults["count"]
+        for i in range(count):
+            self.add_mount_point(i)
+
+    def add_mount_point(self, counter):
+        mount_point = self.items.add()
+        mount_point.name = f"Mount Position {counter+1}"
 
     def update(self, context):
         current_length = len(self.items)
@@ -117,10 +94,6 @@ class PG_MountPointCollection(PropertyGroup):
                 self.add_mount_point(current_length)
                 current_length += 1
             return {"FINISHED"}
-
-    def add_mount_point(self, counter):
-        mount_point = self.items.add()
-        mount_point.name = f"Mount Position {counter+1}"
 
 def register():
     register_class(PG_StandoffBase)
