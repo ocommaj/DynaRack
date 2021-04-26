@@ -1,5 +1,5 @@
 import bpy
-from .standoff import test
+from .standoff_mesh import test
 
 class DYNARACK_OT_test_standoff_add(bpy.types.Operator):
     """adds standoff to test add-on registered ok"""

@@ -9,7 +9,12 @@ bl_info = {
     "category": "All"
 }
 
-moduleNames = [ 'standoff_props', 'standoff_collection', 'dynaTestStandoff', 'dynaTestPanel' ]
+moduleNames = [
+    'property_groups',
+    'mountpoints_operators',
+    'standoff_operator',
+    'dynarack_panels' 
+    ]
 
 import sys
 import importlib
