@@ -13,7 +13,7 @@ moduleNames = [
     'property_groups',
     'mountpoints_operators',
     'standoff_operator',
-    'dynarack_panels' 
+    'dynarack_panels',
     ]
 
 import sys

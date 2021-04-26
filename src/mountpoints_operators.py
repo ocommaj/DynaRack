@@ -11,7 +11,14 @@ class DYNARACK_OT_add_mount_points(Operator):
     bl_category = "DynaRack"
 
     def execute(self, context):
-
+        mountpoints_props = context.scene.MountPoints
+        standoff_props = context.scene.Standoff
+        for i,obj in enumerate(mountpoints_props.items):
+            obj.standoff.metric_diameter = standoff_props.metric_diameter
+            obj.standoff.height = standoff_props.height
+            print(f"mountpoint {i+1} x pos: {obj.x_position}")
+            print(f"mountpoint standoff diam: {obj.standoff.metric_diameter}")
+            print(f"mountpoint standoff height: {obj.standoff.height}")
         return { "FINISHED" }
 
 def register() :

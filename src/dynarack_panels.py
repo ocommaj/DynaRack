@@ -1,8 +1,7 @@
-import bpy
 from bpy.utils import register_class, unregister_class
-from bpy.types import Object
+from bpy.types import Panel
 
-class MountPointsPanel(bpy.types.Panel):
+class MountPointsPanel(Panel):
     bl_idname = "DYNARACK_PT_board_panel"
     bl_label = "Standoff Collection"
     bl_space_type = "VIEW_3D"
@@ -11,23 +10,19 @@ class MountPointsPanel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        scene = context.scene
-
-        collection_data = scene.MountPoints
+        collection_data = context.scene.MountPoints
 
         layout.operator("scene.add_mount_points", icon="MESH_CUBE")
         layout.prop(collection_data, "count")
 
-        if collection_data.count:
-            box = layout.box()
-            for i,item in enumerate(collection_data.items):
-                label = box.label(text=f"Mount Position {i+1}")
-                row = box.row()
+        box = layout.box()
+        for i,item in enumerate(collection_data.items):
+            label = box.label(text=item.name)
+            row = box.row()
+            row.prop(item, "x_position", text="X:")
+            row.prop(item, "y_position", text="Y:")
 
-                row.prop(item, "x_position", text="X:")
-                row.prop(item, "y_position", text="Y:")
-
-class TestStandoffPanel(bpy.types.Panel):
+class TestStandoffPanel(Panel):
     bl_idname = "DYNARACK_PT_standoff_panel"
     bl_label = "Test Standoff"
     bl_space_type = "VIEW_3D"
@@ -36,11 +31,13 @@ class TestStandoffPanel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        scene = context.scene
+        standoff_data = context.scene.Standoff
 
-        standoff_data = scene.Standoff
-
-        layout.operator("scene.add_test_standoff", icon='MESH_CUBE', text="Add Test Standoff")
+        layout.operator(
+            "scene.add_test_standoff",
+            icon='MESH_CUBE',
+            text="Add Test Standoff"
+            )
 
         column = layout.column()
         column.prop(standoff_data, 'metric_diameter')

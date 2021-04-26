@@ -7,7 +7,25 @@ from bpy.props import (
 from bpy.types import PropertyGroup, Scene
 from bpy.utils import register_class, unregister_class
 
-def CollectionUpdate(self, context):
+def get_diameter(self):
+    return self.get_diameter()
+
+def set_diameter(self, value):
+    self.set_diameter(value)
+
+def get_height(self):
+    return self.get_height()
+
+def set_height(self, value):
+    self.set_height(value)
+
+def get_count(self):
+    return self.get_count()
+
+def set_count(self, value):
+    self.set_count(value)
+
+def PropertyUpdate(self, context):
     self.update(context)
 
 class PG_StandoffBase(PropertyGroup):
@@ -17,14 +35,44 @@ class PG_StandoffBase(PropertyGroup):
         min=2,
         max=5,
         step=50,
-        precision=1)
+        precision=1,
+        set=set_diameter,
+        get=get_diameter
+        )
     height: FloatProperty(
         name="Standoff Height",
         default=3,
         min=2,
         max=6,
         step=25,
-        precision=2)
+        precision=2,
+        set=set_height,
+        get=get_height,
+        )
+
+    def get_diameter(self):
+        try:
+            diameter = self["metric_diameter"]
+        except:
+            self.set_diameter(2.5)
+            diameter = self["metric_diameter"]
+        finally:
+            return diameter
+
+    def set_diameter(self, value):
+        self["metric_diameter"] = value
+
+    def get_height(self):
+        try:
+            height = self["height"]
+        except:
+            self.set_height(3)
+            height = self["height"]
+        finally:
+            return height
+
+    def set_height(self, value):
+        self["height"] = value
 
 class PG_MountPoint(PropertyGroup):
     standoff: PointerProperty(type=PG_StandoffBase)
@@ -34,12 +82,28 @@ class PG_MountPoint(PropertyGroup):
 class PG_MountPointCollection(PropertyGroup):
     count: IntProperty(
         name="Number of Mounts",
-        #default=2,
         min=2,
         max=6,
-        update=CollectionUpdate
+        set=set_count,
+        get=get_count,
+        update=PropertyUpdate
     )
     items: CollectionProperty(type=PG_MountPoint, name="Positions")
+
+    def get_count(self):
+        try:
+            count = self["count"]
+        except:
+            default = 2
+            self.set_count(default)
+            for i in range(default):
+                self.add_mount_point(i)
+            count = self["count"]
+        finally:
+            return count
+
+    def set_count(self, value):
+        self["count"] = value
 
     def update(self, context):
         current_length = len(self.items)
@@ -50,10 +114,13 @@ class PG_MountPointCollection(PropertyGroup):
             return {"FINISHED"}
         if current_length < self.count:
             while current_length != self.count:
-                mount_point = self.items.add()
-                mount_point.name = f"MountPoint_{current_length+1}"
+                self.add_mount_point(current_length)
                 current_length += 1
             return {"FINISHED"}
+
+    def add_mount_point(self, counter):
+        mount_point = self.items.add()
+        mount_point.name = f"Mount Position {counter+1}"
 
 def register():
     register_class(PG_StandoffBase)
