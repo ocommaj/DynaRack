@@ -1,5 +1,6 @@
 from bpy.utils import register_class, unregister_class
 from bpy.types import Operator
+from .standoff_mesh import test
 
 class DYNARACK_OT_add_mount_points(Operator):
     """adds collection of MountPoints"""
@@ -16,9 +17,11 @@ class DYNARACK_OT_add_mount_points(Operator):
         for i,obj in enumerate(mountpoints_props.items):
             obj.standoff.metric_diameter = standoff_props.metric_diameter
             obj.standoff.height = standoff_props.height
-            print(f"mountpoint {i+1} x pos: {obj.x_position}")
-            print(f"mountpoint standoff diam: {obj.standoff.metric_diameter}")
-            print(f"mountpoint standoff height: {obj.standoff.height}")
+            mountpoint = test(
+                obj.standoff.metric_diameter, obj.standoff.height, obj.name
+                )
+            mountpoint.location.x = obj.x_position
+            mountpoint.location.y = obj.y_position
         return { "FINISHED" }
 
 def register() :

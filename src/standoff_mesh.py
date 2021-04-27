@@ -2,7 +2,8 @@ import bpy
 import bmesh
 
 class Standoff():
-    def __init__(self, metric_diameter=3, depth=3, segments=64):
+    def __init__(self, name="Std", metric_diameter=3, depth=3, segments=64):
+        self.name = name
         self.depth = depth
         self.segments = segments
         self.radii = {
@@ -70,22 +71,22 @@ def bmesh_to_mesh(bm, me=None):
     https://docs.blender.org/api/current/bmesh.html
     """
     if not me:
-        me = bpy.data.meshes.new("Mesh")
+        me = bpy.data.meshes.new("Standoff")
     bm.to_mesh(me)
     bm.free()
     return me
 
-def add_mesh_to_collection(me, obj=None, collection=None):
+def add_mesh_to_collection(me, name, obj=None, collection=None):
     if not collection:
         collection = bpy.context.collection.objects
     if not obj:
-        obj = bpy.data.objects.new("Object", me)
+        obj = bpy.data.objects.new(name, me)
     collection.link(obj)
     return obj
 
-def test(metric_diameter=2.5, depth=3):
-    standoff = Standoff(metric_diameter, depth)
-    return add_mesh_to_collection(standoff.drum)
+def test(metric_diameter=2.5, depth=3, name="Standoff"):
+    std = Standoff(metric_diameter=metric_diameter, depth=depth, name=name)
+    return add_mesh_to_collection(std.drum, std.name)
 
 if __name__ == "__main__":
     test()
