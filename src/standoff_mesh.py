@@ -11,7 +11,7 @@ class Standoff():
             "outer": metric_diameter*1.25
             }
 
-        self.drum = bmesh_to_mesh( self._create_drum_bmesh() )
+        self.mesh = bmesh_to_mesh( self._create_drum_bmesh() )
 
     def _create_drum_bmesh(self):
         """
@@ -86,7 +86,7 @@ def add_mesh_to_collection(me, name, obj=None, collection=None):
 
 def test(metric_diameter=2.5, depth=3, name="Standoff"):
     std = Standoff(metric_diameter=metric_diameter, depth=depth, name=name)
-    return add_mesh_to_collection(std.drum, std.name)
+    return add_mesh_to_collection(std.mesh, std.name)
 
 if __name__ == "__main__":
     test()
