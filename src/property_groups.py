@@ -56,8 +56,20 @@ class PG_StandoffBase(PropertyGroup):
 
 class PG_MountPoint(PropertyGroup):
     standoff: PointerProperty(type=PG_StandoffBase)
-    x_position: FloatProperty(name="x position", default=0)
-    y_position: FloatProperty(name="y position", default=0)
+    x_position: FloatProperty(
+        name="x position",
+        step=25,
+        set=prop_methods("SET", "x_position"),
+        get=prop_methods("GET", "x_position")
+        )
+    y_position: FloatProperty(
+        name="y position",
+        step=25,
+        set=prop_methods("SET", "y_position"),
+        get=prop_methods("GET", "y_position")
+        )
+
+    defaults={ "x_position": 0, "y_position": 0 }
 
 class PG_MountPointCollection(PropertyGroup):
     count: IntProperty(
@@ -71,16 +83,22 @@ class PG_MountPointCollection(PropertyGroup):
 
     items: CollectionProperty(type=PG_MountPoint, name="Positions")
 
-    defaults = { "count": 2 }
+    defaults = { "count": 2, "positions": [ [0, 5], [0, -5] ] }
 
     def on_load(self):
         count = self.defaults["count"]
+        pos = self.defaults["positions"]
         for i in range(count):
-            self.add_mount_point(i)
+            self.add_mount_point(i, pos[i])
 
-    def add_mount_point(self, counter):
+    def add_mount_point(self, counter, pos=None):
         mount_point = self.items.add()
         mount_point.name = f"Mount Position {counter+1}"
+        if pos:
+            x = pos[0]
+            y = pos[1]
+            mount_point.x_position = x
+            mount_point.y_position = y
 
     def update(self, context):
         current_length = len(self.items)
