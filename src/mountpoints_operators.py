@@ -30,11 +30,9 @@ class DYNARACK_OT_add_mount_points(Operator):
                 mp.standoff.metric_diameter,
                 mp.standoff.height)
 
-            print(mp.name)
             obj = bpy.data.objects.new(mountpoint.name, mountpoint.mesh)
             obj.location.x = mp.x_position
             obj.location.y = mp.y_position
-
 
             mp_collection.objects.link(obj)
 

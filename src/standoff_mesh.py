@@ -11,7 +11,7 @@ class Standoff():
             "outer": metric_diameter*1.25
             }
 
-        self.mesh = bmesh_to_mesh( self._create_drum_bmesh() )
+        self.mesh = bmesh_to_mesh( self._create_drum_bmesh(), "Standoff" )
 
     def _create_drum_bmesh(self):
         """
@@ -64,27 +64,27 @@ def clean_for_manifold(bm):
     verts = bm.verts
     bmesh.ops.remove_doubles(bm, verts=verts, dist=MERGE_DISTANCE)
 
-def bmesh_to_mesh(bm, me=None):
+def bmesh_to_mesh(bm, name=None, me=None):
     """
     optional 'me' arg accepts instance of bpy.types.Mesh or creates new
     'me' variable name is BMesh convention following docs example:
     https://docs.blender.org/api/current/bmesh.html
     """
-    if not me:
-        me = bpy.data.meshes.new("Standoff")
+    if not name: name = "Mesh"
+    if not me: me = bpy.data.meshes.new(name)
     bm.to_mesh(me)
     bm.free()
     return me
 
-def add_mesh_to_collection(me, name, obj=None, collection=None):
-    if not collection:
-        collection = bpy.context.collection.objects
-    if not obj:
-        obj = bpy.data.objects.new(name, me)
-    collection.link(obj)
-    return obj
-
 def test(metric_diameter=2.5, depth=3, name="Standoff"):
+    def add_mesh_to_collection(me, name, obj=None, collection=None):
+        if not collection:
+            collection = bpy.context.collection.objects
+        if not obj:
+            obj = bpy.data.objects.new(name, me)
+        collection.link(obj)
+        return obj
+
     std = Standoff(metric_diameter=metric_diameter, depth=depth, name=name)
     return add_mesh_to_collection(std.mesh, std.name)
 
