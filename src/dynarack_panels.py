@@ -1,6 +1,19 @@
 from bpy.utils import register_class, unregister_class
 from bpy.types import Panel
 
+class ComponentsPanel(Panel):
+    bl_idname = "DYNARACK_PT_components_panel"
+    bl_label = "Component"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "DynaRack"
+
+    def draw(self, context):
+        layout = self.layout
+        enum_data = context.scene.HardwareMounts
+
+        layout.prop_menu_enum(enum_data, "components")
+
 class MountPointsPanel(Panel):
     bl_idname = "DYNARACK_PT_board_panel"
     bl_label = "Standoff Collection"
@@ -44,9 +57,11 @@ class TestStandoffPanel(Panel):
         column.prop(standoff_data, 'height')
 
 def register():
+    register_class(ComponentsPanel)
     register_class(MountPointsPanel)
     register_class(TestStandoffPanel)
 
 def unregister():
+    unregister_class(ComponentsPanel)
     unregister_class(MountPointsPanel)
     unregister_class(TestStandoffPanel)

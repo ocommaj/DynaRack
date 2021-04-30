@@ -18,6 +18,8 @@ class DYNARACK_OT_test_standoff_add(bpy.types.Operator):
         obj.select_set(True)
         context.view_layer.objects.active = obj
 
+        for obj in bpy.data.objects:
+            print(obj)
         return {"FINISHED"}
 
 def register() :

@@ -1,11 +1,14 @@
 from bpy.props import (
+    CollectionProperty,
+    EnumProperty,
     FloatProperty,
     IntProperty,
-    CollectionProperty,
+    StringProperty,
     PointerProperty
     )
 from bpy.types import PropertyGroup, Scene
 from bpy.utils import register_class, unregister_class
+from .hardware_component_data import component_data
 
 def prop_methods(call, prop=None):
     if call == "UPDATE":
@@ -113,18 +116,66 @@ class PG_MountPointCollection(PropertyGroup):
                 current_length += 1
             return {"FINISHED"}
 
+class PG_HardwareMount(PropertyGroup):
+    name: StringProperty(name="Hardware Component")
+    mount_points: PointerProperty(type=PG_MountPointCollection)
+
+class PG_HardwareMounts(PropertyGroup):
+    def _load_components(self, context):
+        test_items = [
+            ("RED", "Red", "", 1),
+            ("GREEN", "Green", "", 2),
+            ("YELLOW", "Yellow", "", 3),
+            ("RPiB", "Rasperry Pi B", "", 4),
+            ("CUSTOM", "Custom", "", 5)
+        ]
+
+        return test_items
+    components: EnumProperty(
+        items=_load_components,
+        name="Add Component",
+        update=prop_methods("UPDATE"))
+
+    def update(self, context):
+        if self.components == "RPiB":
+            mp_props = component_data["RPiB"]
+            standoff_base = context.scene.Standoff
+            mountpoints = context.scene.MountPoints
+
+            standoff_base.metric_diameter = mp_props["diam"]
+            mountpoints.items.clear()
+
+            for i in range(mp_props["count"]):
+                name = f"RPiB Mountpoint {i+1}"
+                x = mp_props["pos"][i][0]
+                y = mp_props["pos"][i][1]
+                mp = mountpoints.items.add()
+                mp.name = name
+                mp.x_position = x
+                mp.y_position = y
+            mountpoints.count = mp_props["count"]
+
+
 def register():
     register_class(PG_StandoffBase)
     register_class(PG_MountPoint)
     register_class(PG_MountPointCollection)
+    register_class(PG_HardwareMount)
+    register_class(PG_HardwareMounts)
     Scene.Standoff = PointerProperty(type=PG_StandoffBase)
     Scene.MountPoint = PointerProperty(type=PG_MountPoint)
     Scene.MountPoints = PointerProperty(type=PG_MountPointCollection)
+    Scene.HardwareMount = PointerProperty(type=PG_HardwareMount)
+    Scene.HardwareMounts = PointerProperty(type=PG_HardwareMounts)
 
 def unregister():
     unregister_class(PG_StandoffBase)
     unregister_class(PG_MountPoint)
     unregister_class(PG_MountPointCollection)
+    unregister_class(PG_HardwareMount)
+    unregister_class(PG_HardwareMounts)
     del Scene.Standoff
     del Scene.MountPoint
     del Scene.MountPoints
+    del Scene.HardwareMount
+    del Scene.HardwareMounts
