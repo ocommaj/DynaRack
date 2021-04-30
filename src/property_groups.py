@@ -121,6 +121,7 @@ class PG_HardwareMount(PropertyGroup):
     mount_points: PointerProperty(type=PG_MountPointCollection)
 
 class PG_HardwareMounts(PropertyGroup):
+    _enum_items = []
     def _load_components(self, context):
         test_items = [
             ("RED", "Red", "", 1),
@@ -130,18 +131,34 @@ class PG_HardwareMounts(PropertyGroup):
             ("CUSTOM", "Custom", "", 5)
         ]
 
-        return test_items
+        self._enum_items.clear()
+        for test_item in test_items:
+            self._enum_items.append(test_item)
+        return self._enum_items
+
+    display_text: StringProperty(
+        default="Add a Component",
+        set=prop_methods("SET", "display_text"),
+        get=prop_methods("GET", "display_text"),
+
+    )
+
     components: EnumProperty(
         items=_load_components,
         name="Add Component",
         update=prop_methods("UPDATE"))
 
+    defaults = { "display_text": "Add a Component" }
+
     def update(self, context):
+        if self.components != "RPiB":
+            self.display_text = self.defaults["display_text"]
         if self.components == "RPiB":
             mp_props = component_data["RPiB"]
             standoff_base = context.scene.Standoff
             mountpoints = context.scene.MountPoints
 
+            self.display_text = mp_props["display_name"]
             standoff_base.metric_diameter = mp_props["diam"]
             mountpoints.items.clear()
 

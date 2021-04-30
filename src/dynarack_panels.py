@@ -12,7 +12,8 @@ class ComponentsPanel(Panel):
         layout = self.layout
         enum_data = context.scene.HardwareMounts
 
-        layout.prop_menu_enum(enum_data, "components")
+        layout.prop_menu_enum(enum_data, "components", text=enum_data.display_text)
+        #print(enum_data.components)
 
 class MountPointsPanel(Panel):
     bl_idname = "DYNARACK_PT_board_panel"

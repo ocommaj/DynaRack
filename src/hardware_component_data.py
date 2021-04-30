@@ -1,7 +1,7 @@
 component_data = {
     "RPiB": {
         "id": "RPiB",
-        "name": "Raspberry Pi B",
+        "display_name": "Raspberry Pi B",
         "diam": 2.5,
         "count": 4,
         "pos": [
