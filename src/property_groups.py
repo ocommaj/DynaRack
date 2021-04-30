@@ -123,24 +123,17 @@ class PG_HardwareMount(PropertyGroup):
 class PG_HardwareMounts(PropertyGroup):
     _enum_items = []
     def _load_components(self, context):
-        test_items = [
-            ("RED", "Red", "", 1),
-            ("GREEN", "Green", "", 2),
-            ("YELLOW", "Yellow", "", 3),
-            ("RPiB", "Rasperry Pi B", "", 4),
-            ("CUSTOM", "Custom", "", 5)
-        ]
-
         self._enum_items.clear()
-        for test_item in test_items:
-            self._enum_items.append(test_item)
+
+        for i,component in enumerate( component_data.values() ):
+            enum_item = (component["id"], component["display_name"], "", i+1)
+            self._enum_items.append(enum_item)
         return self._enum_items
 
     display_text: StringProperty(
         default="Add a Component",
         set=prop_methods("SET", "display_text"),
         get=prop_methods("GET", "display_text"),
-
     )
 
     components: EnumProperty(
@@ -151,10 +144,7 @@ class PG_HardwareMounts(PropertyGroup):
     defaults = { "display_text": "Add a Component" }
 
     def update(self, context):
-        if self.components != "RPiB":
-            self.display_text = self.defaults["display_text"]
-        if self.components == "RPiB":
-            mp_props = component_data["RPiB"]
+        def update_mountpoints(mp_props):
             standoff_base = context.scene.Standoff
             mountpoints = context.scene.MountPoints
 
@@ -163,7 +153,7 @@ class PG_HardwareMounts(PropertyGroup):
             mountpoints.items.clear()
 
             for i in range(mp_props["count"]):
-                name = f"RPiB Mountpoint {i+1}"
+                name = f"{mp_props['display_name']} Mount {i+1}"
                 x = mp_props["pos"][i][0]
                 y = mp_props["pos"][i][1]
                 mp = mountpoints.items.add()
@@ -172,6 +162,11 @@ class PG_HardwareMounts(PropertyGroup):
                 mp.y_position = y
             mountpoints.count = mp_props["count"]
 
+        try:
+            props = component_data[self.components]
+            update_mountpoints(props)
+        except:
+            self.display_text = self.defaults["display_text"]
 
 def register():
     register_class(PG_StandoffBase)
