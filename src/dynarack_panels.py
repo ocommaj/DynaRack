@@ -1,47 +1,43 @@
-from bpy.utils import register_class, unregister_class
 from bpy.types import Panel
+from bpy.utils import register_class, unregister_class
 
-class ComponentsPanel(Panel):
-    bl_idname = "DYNARACK_PT_components_panel"
-    bl_label = "Component"
+class DynaRackPanel:
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "DynaRack"
+    bl_options = { 'DEFAULT_CLOSED' }
+
+class HardwareMountsPanel(DynaRackPanel, Panel):
+    bl_idname = "DYNARACK_PT_hardware_mounts_panel"
+    bl_label = "Hardware Mount Points"
 
     def draw(self, context):
         layout = self.layout
-        enum_data = context.scene.HardwareMounts
+        hw_data = context.scene.HardwareMounts
 
-        layout.prop_menu_enum(enum_data, "components", text=enum_data.display_text)
-        #print(enum_data.components)
+        layout.operator("scene.add_mount_points", icon="COLLECTION_NEW")
+        layout.prop_menu_enum(hw_data, "components", text=hw_data.display_text)
 
-class MountPointsPanel(Panel):
-    bl_idname = "DYNARACK_PT_board_panel"
-    bl_label = "Standoff Collection"
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "UI"
-    bl_category = "DynaRack"
+class MountPointsPanel(DynaRackPanel, Panel):
+    bl_idname = "DYNARACK_PT_mount_points_panel"
+    bl_label = "Mount Points"
+    bl_parent_id = "DYNARACK_PT_hardware_mounts_panel"
 
     def draw(self, context):
         layout = self.layout
-        collection_data = context.scene.MountPoints
+        mp_data = context.scene.MountPoints
 
-        layout.operator("scene.add_mount_points", icon="MESH_CUBE")
-        layout.prop(collection_data, "count")
-
+        layout.prop(mp_data, "count")
         box = layout.box()
-        for i,item in enumerate(collection_data.items):
+        for i,item in enumerate(mp_data.items):
             label = box.label(text=item.name)
             row = box.row()
             row.prop(item, "x_position", text="X:")
             row.prop(item, "y_position", text="Y:")
 
-class TestStandoffPanel(Panel):
+class TestStandoffPanel(DynaRackPanel, Panel):
     bl_idname = "DYNARACK_PT_standoff_panel"
-    bl_label = "Test Standoff"
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "UI"
-    bl_category = "DynaRack"
+    bl_label = "Standoff Properties"
 
     def draw(self, context):
         layout = self.layout
@@ -50,7 +46,7 @@ class TestStandoffPanel(Panel):
         layout.operator(
             "scene.add_test_standoff",
             icon='MESH_CUBE',
-            text="Add Test Standoff"
+            text="Add a Test Standoff"
             )
 
         column = layout.column()
@@ -58,11 +54,11 @@ class TestStandoffPanel(Panel):
         column.prop(standoff_data, 'height')
 
 def register():
-    register_class(ComponentsPanel)
+    register_class(HardwareMountsPanel)
     register_class(MountPointsPanel)
     register_class(TestStandoffPanel)
 
 def unregister():
-    unregister_class(ComponentsPanel)
+    unregister_class(HardwareMountsPanel)
     unregister_class(MountPointsPanel)
     unregister_class(TestStandoffPanel)

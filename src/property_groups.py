@@ -6,9 +6,10 @@ from bpy.props import (
     StringProperty,
     PointerProperty
     )
-from bpy.types import PropertyGroup, Scene
+from bpy.types import Mesh, PropertyGroup, Scene
 from bpy.utils import register_class, unregister_class
 from .hardware_component_data import component_data
+from .standoff_mesh import Standoff
 
 def prop_methods(call, prop=None):
     if call == "UPDATE":
@@ -36,26 +37,39 @@ def prop_methods(call, prop=None):
 class PG_StandoffBase(PropertyGroup):
     metric_diameter: FloatProperty(
         name="Inner Diameter (Metric)",
-        default=2.5,
         min=2,
         max=5,
         step=50,
         precision=1,
         set=prop_methods("SET", "metric_diameter"),
-        get=prop_methods("GET", "metric_diameter")
+        get=prop_methods("GET", "metric_diameter"),
+        update=prop_methods("UPDATE")
         )
     height: FloatProperty(
         name="Standoff Height",
-        default=3,
         min=2,
         max=6,
         step=25,
         precision=2,
         set=prop_methods("SET", "height"),
         get=prop_methods("GET", "height"),
+        update=prop_methods("UPDATE")
         )
+    mesh: PointerProperty(type=Mesh)
 
-    defaults = { "metric_diameter":  2.5, "height": 3 }
+    defaults = { "metric_diameter": 2.5, "height": 3 }
+
+    standoff = Standoff()
+
+    def on_load(self):
+        if self.height and self.metric_diameter:
+            self.__set_mesh()
+
+    def update(self, context):
+        self.__set_mesh()
+
+    def __set_mesh(self):
+        self.mesh = self.standoff.mesh(self.height, self.metric_diameter)
 
 class PG_MountPoint(PropertyGroup):
     standoff: PointerProperty(type=PG_StandoffBase)
@@ -86,7 +100,16 @@ class PG_MountPointCollection(PropertyGroup):
 
     items: CollectionProperty(type=PG_MountPoint, name="Positions")
 
-    defaults = { "count": 2, "positions": [ [0, 5], [0, -5] ] }
+    collection_name: StringProperty(
+        set=prop_methods("SET", "collection_name"),
+        get=prop_methods("GET", "collection_name"),
+    )
+
+    defaults = {
+        "count": 2,
+        "positions": [ [0, 5], [0, -5] ],
+        "collection_name": "Mount Points"
+        }
 
     def on_load(self):
         count = self.defaults["count"]
@@ -116,10 +139,6 @@ class PG_MountPointCollection(PropertyGroup):
                 current_length += 1
             return {"FINISHED"}
 
-class PG_HardwareMount(PropertyGroup):
-    name: StringProperty(name="Hardware Component")
-    mount_points: PointerProperty(type=PG_MountPointCollection)
-
 class PG_HardwareMounts(PropertyGroup):
     _enum_items = []
     def _load_components(self, context):
@@ -141,7 +160,7 @@ class PG_HardwareMounts(PropertyGroup):
         name="Add Component",
         update=prop_methods("UPDATE"))
 
-    defaults = { "display_text": "Add a Component" }
+    defaults = { "display_text": "Select a Component" }
 
     def update(self, context):
         def update_mountpoints(mp_props):
@@ -149,6 +168,7 @@ class PG_HardwareMounts(PropertyGroup):
             mountpoints = context.scene.MountPoints
 
             self.display_text = mp_props["display_name"]
+            mountpoints.collection_name = f"{mp_props['display_name']} Mounts"
             standoff_base.metric_diameter = mp_props["diam"]
             mountpoints.items.clear()
 
@@ -172,22 +192,18 @@ def register():
     register_class(PG_StandoffBase)
     register_class(PG_MountPoint)
     register_class(PG_MountPointCollection)
-    register_class(PG_HardwareMount)
     register_class(PG_HardwareMounts)
     Scene.Standoff = PointerProperty(type=PG_StandoffBase)
     Scene.MountPoint = PointerProperty(type=PG_MountPoint)
     Scene.MountPoints = PointerProperty(type=PG_MountPointCollection)
-    Scene.HardwareMount = PointerProperty(type=PG_HardwareMount)
     Scene.HardwareMounts = PointerProperty(type=PG_HardwareMounts)
 
 def unregister():
     unregister_class(PG_StandoffBase)
     unregister_class(PG_MountPoint)
     unregister_class(PG_MountPointCollection)
-    unregister_class(PG_HardwareMount)
     unregister_class(PG_HardwareMounts)
     del Scene.Standoff
     del Scene.MountPoint
     del Scene.MountPoints
-    del Scene.HardwareMount
     del Scene.HardwareMounts

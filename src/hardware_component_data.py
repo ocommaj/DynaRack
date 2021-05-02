@@ -4,7 +4,7 @@ component_data = {
         "display_name": "Custom",
         "diam": 3,
         "count": 2,
-        "pos": [ [ 0, -5 ], [0, 5] ]
+        "pos": [ [ 0, -6 ], [0, 6] ]
     },
     "RPiB": {
         "id": "RPiB",

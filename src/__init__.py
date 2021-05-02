@@ -9,7 +9,8 @@ bl_info = {
     "category": "All"
 }
 
-moduleNames = [
+module_names = [
+    'standoff_mesh',
     'property_groups',
     'mountpoints_operators',
     'standoff_operator',
@@ -19,26 +20,23 @@ moduleNames = [
 import sys
 import importlib
 
-moduleFullNames = [ f"{__name__}.{module}" for module in moduleNames ]
+module_full_names = [ f"{__name__}.{module}" for module in module_names ]
 
-for module in moduleFullNames:
+for module in module_full_names:
     if module in sys.modules:
         importlib.reload(sys.modules[module])
     else:
-        globals()[module] = importlib.import_module(module)
-        setattr(globals()[module], 'moduleNames', moduleFullNames)
+        locals()[module] = importlib.import_module(module)
+        setattr(locals()[module], 'module_names', module_full_names)
 
 def register():
-    for module in moduleFullNames:
+    for module in module_full_names:
         if module in sys.modules:
             if hasattr(sys.modules[module], 'register'):
                 sys.modules[module].register()
 
 def unregister():
-    for module in moduleFullNames:
+    for module in module_full_names:
         if module in sys.modules:
             if hasattr(sys.modules[module], 'unregister'):
                 sys.modules[module].unregister()
-
-if __name__ == "__main__":
-    register()
